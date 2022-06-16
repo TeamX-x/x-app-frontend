@@ -12,10 +12,10 @@ import contants from '../contants';
 import { useSelector } from 'react-redux';
 
 function renderCardWrapper(cardId, cardType) {
-    const piece = <OptionalCard text={cardId} />
+    const piece = <OptionalCard isOnContract={false} type={cardType} cardId={cardId} />
 
     return (
-        piece ? <CardWrapper cardType={cardType} isOptional={true} cardId={cardId} key={`optional-${cardId}`} >{piece}</CardWrapper> : null
+        piece ? <CardWrapper isSlot={false} cardType={cardType} isOptional={true} cardId={cardId} key={`optional-${cardId}`} >{piece}</CardWrapper> : null
     )
 }
 
@@ -88,7 +88,7 @@ export default function OptionalCardBoard({ cardIds }) {
                         id="panel1bh-header"
                     >
                         <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                            General Functions
+                            General Entiies
                         </Typography>
                         <Typography sx={{ color: 'text.secondary' }}>Smartcontract Impl Entiies</Typography>
                     </AccordionSummary>

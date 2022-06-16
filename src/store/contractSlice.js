@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import contants from '../contants';
 import counter from '../templates/counter'
+import loan from '../templates/loan';
 
 function arrayRemove(arr, value) {
   return arr.filter(function (ele) {
@@ -8,15 +9,25 @@ function arrayRemove(arr, value) {
   });
 }
 
-function __setFunction(functionId, stateFunctions, stateOptionalContractFunctions) {
-  stateFunctions.push(functionId)
+function __setFunction(functionId, stateFunctions, stateOptionalContractFunctions, isOptionalToContract) {
+  let stateFunctionUpdated = stateFunctions
+  let stateOptionalContractFunctionsUpdated = stateOptionalContractFunctions
+
+  if(!isOptionalToContract) {
+    stateOptionalContractFunctionsUpdated.push(functionId)
+    stateFunctionUpdated =  arrayRemove(stateFunctions, functionId)
+  } else {
+    stateFunctionUpdated.push(functionId)
+    stateOptionalContractFunctionsUpdated =  arrayRemove(stateOptionalContractFunctionsUpdated, functionId)
+  }
+
   return {
-    stateFunctions: stateFunctions,
-    stateOptionalContractFunctions: arrayRemove(stateOptionalContractFunctions, functionId)
+    stateFunctions: stateFunctionUpdated,
+    stateOptionalContractFunctions: stateOptionalContractFunctionsUpdated
   }
 }
 
-function __setImplEntity(functionId, stateImplEntities, stateOptionalImplEntities) {
+function __setImplEntity(functionId, stateImplEntities, stateOptionalImplEntities, isOptionalToContract) {
   stateImplEntities.push(functionId)
   return {
     stateImplEntities: stateImplEntities,
@@ -26,6 +37,8 @@ function __setImplEntity(functionId, stateImplEntities, stateOptionalImplEntitie
 
 export const contractSlice = createSlice({
   name: 'contract',
+  elementUsageId: '',
+  elementTypeUsage: '',
   initialState: {
     contract: {
       name: '',
@@ -36,13 +49,13 @@ export const contractSlice = createSlice({
     impl_entities: [],
     optionalContract: {
       contract: {
-        name: '',
-        attributes: []
+        name: loan.contract.name,
+        attributes: loan.contract.attributes
       },
       entities: [],
-      functions: counter.functions,
-      impl_entities: counter.impl_entities,
-    }
+      functions: loan.functions,
+      impl_entities: loan.impl_entities,
+    },
   },
   reducers: {
     setContract: (state, contractDetail) => {
@@ -51,56 +64,87 @@ export const contractSlice = createSlice({
     setEntity: (state, entityDetail) => {
       state.entities.push(entityDetail)
     },
-    setFunction: (state, context) => {
-      const functionId = context.payload
-      const {
-        stateFunctions,
-        stateOptionalContractFunctions
-      } = __setFunction(functionId, state.functions, state.optionalContract.functions)
-
-      state.functions = stateFunctions
-      state.optionalContract.functions = stateOptionalContractFunctions
+    setFunction: (state) => {
+      const functionId = state.elementUsageId
+      if(functionId) {
+        const {
+          stateFunctions,
+          stateOptionalContractFunctions
+        } = __setFunction(functionId, state.functions, state.optionalContract.functions)
+  
+        state.functions = stateFunctions
+        state.optionalContract.functions = stateOptionalContractFunctions
+        state.elementUsageId = ''
+      }
+     
     },
-    setImplEntity: (state, context) => {
-      const cardId = context.payload
-      const {
-        stateImplEntities,
-        stateOptionalImplEntities
-      } = __setImplEntity(cardId, state.impl_entities, state.optionalContract.impl_entities)
-
-      state.impl_entities = stateImplEntities
-      state.optionalContract.impl_entities = stateOptionalImplEntities
+    setImplEntity: (state) => {
+      const cardId = state.elementUsageId
+      if(!!cardId) {
+        const {
+          stateImplEntities,
+          stateOptionalImplEntities
+        } = __setImplEntity(cardId, state.impl_entities, state.optionalContract.impl_entities)
+  
+        state.impl_entities = stateImplEntities
+        state.optionalContract.impl_entities = stateOptionalImplEntities
+        state.elementUsageId = ''
+      }
+     
     },
     handleDispatchByType(state, context) {
-      const { cardType, cardId } = context.payload
-      
-      switch (cardType) {
-        case contants.CONTRACT_LAYOUT.FUNCTION:
-          const {
-            stateFunctions,
-            stateOptionalContractFunctions
-          } = __setFunction(cardId, state.functions, state.optionalContract.functions)
-    
-          state.functions = stateFunctions
-          state.optionalContract.functions = stateOptionalContractFunctions
-          return ;
-        case contants.CONTRACT_LAYOUT.IMPL_ENTITY:
-          const {
-            stateImplEntities,
-            stateOptionalImplEntities
-          } = __setImplEntity(cardId, state.impl_entities, state.optionalContract.impl_entities)
-    
-          state.impl_entities = stateImplEntities
-          state.optionalContract.impl_entities = stateOptionalImplEntities
-          return ;
-        default:
+      const cardType =  state.elementTypeUsage
+      const cardId = state.elementUsageId
+
+      const isMoveOptionalToContract = context.payload.is_move_optional_to_contract ?? true
+
+      if(isMoveOptionalToContract && cardType != context.payload.card_type) {
+        return ;
       }
-    }
+
+      if(!!cardId) {
+        switch (cardType) {
+          case contants.CONTRACT_LAYOUT.FUNCTION:
+            const {
+              stateFunctions,
+              stateOptionalContractFunctions
+            } = __setFunction(cardId, state.functions, state.optionalContract.functions, isMoveOptionalToContract)
+      
+            state.functions = stateFunctions
+            state.optionalContract.functions = stateOptionalContractFunctions
+            state.elementTypeUsage = ''
+            state.elementUsageId = ''
+
+            console.log(stateFunctions)
+            return ;
+          case contants.CONTRACT_LAYOUT.IMPL_ENTITY:
+            const {
+              stateImplEntities,
+              stateOptionalImplEntities
+            } = __setImplEntity(cardId, state.impl_entities, state.optionalContract.impl_entities, isMoveOptionalToContract)
+      
+            state.impl_entities = stateImplEntities
+            state.optionalContract.impl_entities = stateOptionalImplEntities
+            state.elementTypeUsage = ''
+            state.elementUsageId = ''
+            return ;
+          default:
+        }
+      }
+
+    },
+    setElementUsageId(state, context) {
+      state.elementUsageId = context.payload
+    },
+    setElementTypeUsage(state, context) {
+      state.elementTypeUsage = context.payload
+    },
+
 
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { setContract, setEntity, setImplEntity, handleDispatchByType } = contractSlice.actions
+export const { setContract, setEntity, setImplEntity, handleDispatchByType, setElementUsageId, setElementTypeUsage } = contractSlice.actions
 
 export default contractSlice.reducer

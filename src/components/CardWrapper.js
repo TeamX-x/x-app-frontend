@@ -11,7 +11,7 @@ const WrapperStyled = styled(Paper)(({ theme }) => ({
     padding: '20px'
 }));
 
-export default function CardWrapper({ isOptional, cardId, children, cardType }) {
+export default function CardWrapper({ isOptional, cardId, children, isSlot, cardType }) {
 
     const count = useSelector((state) => state.contract.value)
     const dispatch = useDispatch()
@@ -20,9 +20,10 @@ export default function CardWrapper({ isOptional, cardId, children, cardType }) 
     const [{ isOver, canDrop }, drop] = useDrop(
         () => ({
             accept: 'card',
-            drop: () => {
-                console.log('xx');
-                dispatch(handleDispatchByType({cardType, cardId}))
+            drop: (item, monitor) => {
+                if(!isOptional && isSlot) {
+                    dispatch(handleDispatchByType({is_move_optional_to_contract: true, card_type: cardType}))
+                }
             },
             collect: (monitor) => ({
                 isOver: !!monitor.isOver(),
@@ -37,7 +38,7 @@ export default function CardWrapper({ isOptional, cardId, children, cardType }) 
     return (
         <div style={{ width: '100%' }} ref={drop}>
             <Grid xs={12} style={{ padding: '20px' }} >
-                {(!isOptional) && slotContract()}
+                {((!isOptional) && isSlot) && slotContract()}
                 {isOptional && children}
             </Grid>
         </div>
