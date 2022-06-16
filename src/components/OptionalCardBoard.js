@@ -10,6 +10,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import counter from '../templates/counter';
 import contants from '../contants';
 import { useSelector } from 'react-redux';
+import OptionalForm from './OptionalForm';
 
 function renderCardWrapper(cardId, cardType) {
     const piece = <OptionalCard isOnContract={false} type={cardType} cardId={cardId} />
@@ -19,25 +20,44 @@ function renderCardWrapper(cardId, cardType) {
     )
 }
 
+function renderFormWrapper(id, name, cardType, attribute) {
+    const piece = <OptionalForm id={id} attribute={attribute} isOnContract={false} type={cardType} name={name} />
+
+    return (
+        piece ? <CardWrapper isSlot={false} cardType={cardType} isOptional={true} cardId={id} key={`optional-${name}`} >{piece}</CardWrapper> : null
+    )
+}
+
+
 export default function OptionalCardBoard({ cardIds }) {
     const [expanded, setExpanded] = React.useState(false);
 
+    const contractAttributes = useSelector((state) => state.contract.optionalContract.contract.attributes)
     const functions = useSelector((state) => state.contract.optionalContract.functions)
     const implEntities = useSelector((state) => state.contract.optionalContract.impl_entities)
 
+    let contractAttributeRender = []
     let functionRender = []
     let implEntityRender = []
 
+    contractAttributes.map((attribute, index) => {
+        const cardElement = renderFormWrapper(index, attribute.name, contants.CONTRACT_LAYOUT.CONTRACT, attribute)
+        if (!!cardElement) {
+            contractAttributeRender.push(cardElement)
+        }
+    })
+
+
     functions.map(fnId => {
         const cardElement = renderCardWrapper(fnId, contants.CONTRACT_LAYOUT.FUNCTION)
-        if(!!cardElement) {
+        if (!!cardElement) {
             functionRender.push(cardElement)
         }
     })
 
     implEntities.map(implEntityId => {
         const cardElement = renderCardWrapper(implEntityId, contants.CONTRACT_LAYOUT.IMPL_ENTITY)
-        if(!!cardElement) {
+        if (!!cardElement) {
             implEntityRender.push(cardElement)
         }
     })
@@ -62,6 +82,25 @@ export default function OptionalCardBoard({ cardIds }) {
             }}
             container
             justifyContent="center">
+
+            <Grid style={styledAccordion} xs={12}>
+                <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1bh-content"
+                        id="panel1bh-header"
+                    >
+                        <Typography sx={{ width: '33%', flexShrink: 0 }}>
+                            General Initialize
+                        </Typography>
+                        <Typography sx={{ color: 'text.secondary' }}>Smartcontract Init</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        {contractAttributeRender}
+                    </AccordionDetails>
+                </Accordion>
+            </Grid>
+
             <Grid style={styledAccordion} xs={12}>
                 <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
                     <AccordionSummary

@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { postSubmitContract } from '../api';
 import contants from '../contants';
 import counter from '../templates/counter'
 import loan from '../templates/loan';
@@ -9,21 +10,44 @@ function arrayRemove(arr, value) {
   });
 }
 
+function arrayAttributesRemove(arr, name) {
+  return arr.filter(function (ele) {
+    return name != ele.name;
+  });
+}
+
 function __setFunction(functionId, stateFunctions, stateOptionalContractFunctions, isOptionalToContract) {
   let stateFunctionUpdated = stateFunctions
   let stateOptionalContractFunctionsUpdated = stateOptionalContractFunctions
 
-  if(!isOptionalToContract) {
+  if (!isOptionalToContract) {
     stateOptionalContractFunctionsUpdated.push(functionId)
-    stateFunctionUpdated =  arrayRemove(stateFunctions, functionId)
+    stateFunctionUpdated = arrayRemove(stateFunctions, functionId)
   } else {
     stateFunctionUpdated.push(functionId)
-    stateOptionalContractFunctionsUpdated =  arrayRemove(stateOptionalContractFunctionsUpdated, functionId)
+    stateOptionalContractFunctionsUpdated = arrayRemove(stateOptionalContractFunctionsUpdated, functionId)
   }
 
   return {
     stateFunctions: stateFunctionUpdated,
     stateOptionalContractFunctions: stateOptionalContractFunctionsUpdated
+  }
+}
+
+function __setAttributeInit(index, objAttribute, stateContractAttributes, stateOptionalContractAttributes, isOptionalToContract) {
+  let stateContractAttributesUpdated = stateContractAttributes
+  let stateOptionalContractAttributesUpdated = stateOptionalContractAttributes
+  if (!isOptionalToContract) {
+    stateOptionalContractAttributesUpdated.push(objAttribute)
+    stateContractAttributesUpdated = arrayAttributesRemove(stateContractAttributesUpdated, objAttribute.name)
+  } else {
+    stateContractAttributesUpdated.push(objAttribute)
+    stateOptionalContractAttributesUpdated = arrayAttributesRemove(stateOptionalContractAttributesUpdated, objAttribute.name)
+  }
+
+  return {
+    stateContractAttributes: stateContractAttributesUpdated,
+    stateOptionalContractAttributes: stateOptionalContractAttributesUpdated
   }
 }
 
@@ -40,6 +64,9 @@ export const contractSlice = createSlice({
   elementUsageId: '',
   elementTypeUsage: '',
   initialState: {
+    templates: {
+      loan: loan
+    },
     contract: {
       name: '',
       attributes: []
@@ -66,68 +93,77 @@ export const contractSlice = createSlice({
     },
     setFunction: (state) => {
       const functionId = state.elementUsageId
-      if(functionId) {
+      if (functionId) {
         const {
           stateFunctions,
           stateOptionalContractFunctions
         } = __setFunction(functionId, state.functions, state.optionalContract.functions)
-  
+
         state.functions = stateFunctions
         state.optionalContract.functions = stateOptionalContractFunctions
         state.elementUsageId = ''
       }
-     
+
     },
     setImplEntity: (state) => {
       const cardId = state.elementUsageId
-      if(!!cardId) {
+      if (cardId) {
         const {
           stateImplEntities,
           stateOptionalImplEntities
         } = __setImplEntity(cardId, state.impl_entities, state.optionalContract.impl_entities)
-  
+
         state.impl_entities = stateImplEntities
         state.optionalContract.impl_entities = stateOptionalImplEntities
         state.elementUsageId = ''
       }
-     
+
     },
+
     handleDispatchByType(state, context) {
-      const cardType =  state.elementTypeUsage
+      const cardType = state.elementTypeUsage
       const cardId = state.elementUsageId
 
       const isMoveOptionalToContract = context.payload.is_move_optional_to_contract ?? true
 
-      if(isMoveOptionalToContract && cardType != context.payload.card_type) {
-        return ;
+      if (isMoveOptionalToContract && cardType != context.payload.card_type) {
+        return;
       }
-
-      if(!!cardId) {
+      if (cardId !== null) {
         switch (cardType) {
           case contants.CONTRACT_LAYOUT.FUNCTION:
             const {
               stateFunctions,
               stateOptionalContractFunctions
             } = __setFunction(cardId, state.functions, state.optionalContract.functions, isMoveOptionalToContract)
-      
+
             state.functions = stateFunctions
             state.optionalContract.functions = stateOptionalContractFunctions
             state.elementTypeUsage = ''
             state.elementUsageId = ''
 
-            console.log(stateFunctions)
-            return ;
+            return;
           case contants.CONTRACT_LAYOUT.IMPL_ENTITY:
             const {
               stateImplEntities,
               stateOptionalImplEntities
             } = __setImplEntity(cardId, state.impl_entities, state.optionalContract.impl_entities, isMoveOptionalToContract)
-      
+
             state.impl_entities = stateImplEntities
             state.optionalContract.impl_entities = stateOptionalImplEntities
             state.elementTypeUsage = ''
             state.elementUsageId = ''
-            return ;
+            return;
+          case contants.CONTRACT_LAYOUT.CONTRACT:
+            const {
+              stateContractAttributes,
+              stateOptionalContractAttributes
+            } = __setAttributeInit(cardId, state.templates.loan.contract.attributes[cardId], state.contract.attributes, state.optionalContract.contract.attributes, isMoveOptionalToContract)
+
+            state.contract.attributes = stateContractAttributes
+            state.optionalContract.contract.attributes = stateOptionalContractAttributes
+            state.elementTypeUsage = ''
+            state.elementUsageId = ''
           default:
         }
       }
@@ -139,12 +175,25 @@ export const contractSlice = createSlice({
     setElementTypeUsage(state, context) {
       state.elementTypeUsage = context.payload
     },
+    setContractAttributeValueByIndex(state, context) {
+      const value = context.payload.value
+      const index = context.payload.index
 
+      state.contract.attributes[index].value = value
+    },
+    requestDeploy(state) {
+      postSubmitContract(JSON.parse(JSON.stringify({
+        contract: state.contract,
+        entities: state.entities,
+        functions: state.functions,
+        impl_entities: state.impl_entities,
+      })))
+    }
 
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { setContract, setEntity, setImplEntity, handleDispatchByType, setElementUsageId, setElementTypeUsage } = contractSlice.actions
+export const { setContract, setEntity, setImplEntity, handleDispatchByType, setElementUsageId, setElementTypeUsage, setContractAttributeValueByIndex, requestDeploy } = contractSlice.actions
 
 export default contractSlice.reducer
