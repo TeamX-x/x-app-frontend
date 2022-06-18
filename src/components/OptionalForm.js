@@ -4,7 +4,7 @@ import React from 'react'
 import { useDrag } from 'react-dnd'
 import { useDispatch, useSelector } from 'react-redux'
 import contants from '../contants'
-import { handleDispatchByType, setContract, setContractAttributeValueByIndex, setElementTypeUsage, setElementUsageId } from '../store/contractSlice'
+import { handleDispatchByType, setContractAttributeValueByName, setElementTypeUsage, setElementUsageId } from '../store/contractSlice'
 
 export default function OptionalForm({ id, type, name, isOnContract, attribute }) {
 
@@ -34,19 +34,23 @@ export default function OptionalForm({ id, type, name, isOnContract, attribute }
     }))
 
     const renderFormInit = () => {
-        // return<TextField
-        //         required
-        //         id="outlined-required"
-        //         label={attribute.name}
-        //         defaultValue={attribute.value}
-        //     />
+        switch (attribute.type) {
+            case 'date': 
+            return <DateTimePicker
+                label={attribute.name}
+                value={value}
+                onChange={(value) => {dispatch(setContractAttributeValueByName({ name: attribute.name, value: value  })); setValue(value)}}
+                renderInput={(params) => <TextField {...params} />}
+            />;
+            default: 
+            return <TextField
+                required
+                id="outlined-required"
+                label={attribute.name}
+                onChange={(event) => dispatch(setContractAttributeValueByName({ name: attribute.name, value: event.target.value }))}
+            />
+        }
 
-        return <DateTimePicker
-            label={attribute.name}
-            value={value}
-            onChange={() => dispatch(setContractAttributeValueByIndex({ index: id, value: value }))}
-            renderInput={(params) => <TextField {...params} />}
-        />
     }
 
     return <div ref={dragRef}>

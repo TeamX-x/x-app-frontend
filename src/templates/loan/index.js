@@ -3,13 +3,18 @@ export default {
         name: "Counter",
         attributes: [
             {
-                    "name": "deadline",
-                    "type": "u64",
-                    "value": ""
+                "name": "deadline",
+                "type": "date",
+                "value": ""
+            },
+            {
+                "name": "creator",
+                "type": "textbox",
+                "value": ""
             }
         ]
     },
-    entities:  [
+    entities: [
     ],
     functions: [
         "update_deadline",

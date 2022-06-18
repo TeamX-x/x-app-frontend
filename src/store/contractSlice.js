@@ -63,6 +63,7 @@ export const contractSlice = createSlice({
   name: 'contract',
   elementUsageId: '',
   elementTypeUsage: '',
+  elementUsageName: '',
   initialState: {
     templates: {
       loan: loan
@@ -83,7 +84,7 @@ export const contractSlice = createSlice({
       functions: loan.functions,
       impl_entities: loan.impl_entities,
     },
-    btnLoading: false
+    open_overlay: false
   },
   reducers: {
     setContract: (state, contractDetail) => {
@@ -170,31 +171,48 @@ export const contractSlice = createSlice({
       }
 
     },
+    setElementUsageName(state, context) {
+      state.elementUsageName = context.payload
+    },
     setElementUsageId(state, context) {
       state.elementUsageId = context.payload
     },
     setElementTypeUsage(state, context) {
       state.elementTypeUsage = context.payload
     },
-    setContractAttributeValueByIndex(state, context) {
+    setContractAttributeValueByName(state, context) {
       const value = context.payload.value
-      const index = context.payload.index
+      const name = context.payload.name
 
-      state.contract.attributes[index].value = value
+      console.log(value, name);
+
+      state.contract.attributes.map((attr, index) => {
+        console.log('-------', attr.name, index);
+        if (attr.name == name) {
+          state.contract.attributes[index].value = value
+        }
+      })
     },
     requestDeploy(state) {
-      postSubmitContract(JSON.parse(JSON.stringify({
-        contract: state.contract,
-        entities: state.entities,
-        functions: state.functions,
-        impl_entities: state.impl_entities,
-      })))
+      // state.open_overlay = true
+      //  postSubmitContract(JSON.parse(JSON.stringify({
+      //   contract: state.contract,
+      //   entities: state.entities,
+      //   functions: state.functions,
+      //   impl_entities: state.impl_entities,
+      // }))).then(res => {
+      //   console.log('xxx')
+      //   state.open_overlay = false
+      // })
+    },
+    setOpenOverlay(state, context) {
+      state.open_overlay = context.payload
     }
 
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { setContract, setEntity, setImplEntity, handleDispatchByType, setElementUsageId, setElementTypeUsage, setContractAttributeValueByIndex, requestDeploy } = contractSlice.actions
+export const { setContract, setEntity, setImplEntity, handleDispatchByType, setElementUsageId, setOpenOverlay, setElementUsageName, setElementTypeUsage, setContractAttributeValueByName, requestDeploy } = contractSlice.actions
 
 export default contractSlice.reducer
