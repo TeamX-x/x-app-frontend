@@ -11,6 +11,11 @@ export default {
                 "name": "creator",
                 "type": "textbox",
                 "value": ""
+            },
+            {
+                "name": "contract_name",
+                "type": "textbox",
+                "value": ""
             }
         ]
     },
