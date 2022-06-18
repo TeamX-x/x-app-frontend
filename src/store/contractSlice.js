@@ -83,6 +83,7 @@ export const contractSlice = createSlice({
       functions: loan.functions,
       impl_entities: loan.impl_entities,
     },
+    btnLoading: false
   },
   reducers: {
     setContract: (state, contractDetail) => {

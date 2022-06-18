@@ -1,5 +1,5 @@
 import { Box, Button, Card, Grid, Typography } from '@mui/material'
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import contants from '../contants'
 import { requestDeploy } from '../store/contractSlice'
@@ -32,6 +32,8 @@ function renderFormWrapper(id, name, cardType, attribute) {
 }
 
 export default function ContractBoard() {
+
+    const [loadingBtn, setLoadinBtn] = useState(true)
 
     const dispatch = useDispatch()
 
@@ -124,7 +126,7 @@ export default function ContractBoard() {
                     marginTop: '20px',
                 }} container
                 justifyContent="center">
-                <Button onClick={() => dispatch(requestDeploy())} variant="contained">Deploy</Button>
+                <Button loading onClick={() => dispatch(requestDeploy())} variant="contained">Deploy</Button>
             </Grid>
         </Grid>
     )

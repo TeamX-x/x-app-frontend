@@ -102,7 +102,7 @@ export default function OptionalCardBoard({ cardIds }) {
             </Grid>
 
             <Grid style={styledAccordion} xs={12}>
-                <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+                <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
                     <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1bh-content"
@@ -120,7 +120,7 @@ export default function OptionalCardBoard({ cardIds }) {
             </Grid>
 
             <Grid xs={12}>
-                <Accordion style={styledAccordion} expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
+                <Accordion style={styledAccordion} expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
                     <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1bh-content"

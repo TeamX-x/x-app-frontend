@@ -8,7 +8,7 @@ import { handleDispatchByType, setContract, setContractAttributeValueByIndex, se
 
 export default function OptionalForm({ id, type, name, isOnContract, attribute }) {
 
-    const [value, setValue] = React.useState(new Date());
+    const [value, setValue] = React.useState('');
 
 
 
