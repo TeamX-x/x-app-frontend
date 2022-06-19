@@ -1,4 +1,4 @@
-import { Backdrop, Box, Button, Card, CircularProgress, Grid, Link, Typography } from '@mui/material'
+import { Backdrop, Box, Button, Card, CircularProgress, Grid, Link, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { postSubmitContract } from '../api'
@@ -35,6 +35,9 @@ function renderFormWrapper(id, name, cardType, attribute) {
 export default function ContractBoard() {
 
     const [linkWeb, setLinkWeb] = useState('')
+    const [hash, setHash] = useState('')
+    const [contractAddress, setContractAddress] = useState('')
+
     const dispatch = useDispatch()
 
     const openOvelay = useSelector((state) => state.contract.open_overlay)
@@ -142,16 +145,35 @@ export default function ContractBoard() {
                     }
                     const resDeploy = await postSubmitContract(JSON.parse(JSON.stringify(payload)))
                     setLinkWeb(resDeploy.data.web)
+                    setContractAddress(resDeploy.data.smartcontract)
+                    setHash(resDeploy.data.hash)
                     dispatch(setOpenOverlay(false))
                 }} variant="contained">Deploy</Button>
             </Grid>
 
-            {linkWeb && <Grid xs={12}
-                style={{
-                    margin: '20px',
-                }} container
-                justifyContent="center">
-                <span style={{marginRight: '10px'}}>Deployed: </span><Link href={linkWeb}> My dApp</Link>
+            {linkWeb && <Grid xs={12}>
+                <Grid xs={12}
+                    style={{
+                        margin: '20px',
+                    }} container
+                    justifyContent="center">
+                    <span style={{ marginRight: '10px' }}>Deployed: </span><Link href={linkWeb}> My dApp</Link>
+                </Grid>
+                <Grid xs={12}>
+                    <List>
+                    {/* https://explorer.near.org/transactions/HcmK7knNJYHfiZxT8BujLLP9eKKTa4Hh9AypCK9uvK9v */}
+                        <ListItem disablePadding>
+                            <ListItemButton>
+                                <ListItemText primary={`Contract Address: ${contractAddress}`} />
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem disablePadding>
+                            <ListItemButton>
+                                <Link href={`https://explorer.testnet.near.org/transactions/${hash}`}> Check Transaction</Link>
+                            </ListItemButton>
+                        </ListItem>
+                    </List>
+                </Grid>
             </Grid>}
 
             <Backdrop
